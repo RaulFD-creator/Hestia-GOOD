@@ -15,6 +15,7 @@ def _balanced_labels(labels: np.ndarray, value: list, test: list,
     for label in unique_labels:
         test_idx = np.where(test_labels == label)
         new_idx = np.where(new_labels == label)
-        if test_counts[test_idx] + new_counts[new_idx] > proportion * 1.3:
-            return False
+        if test_counts[test_idx].size > 0 and new_counts[new_idx].size > 0:
+            if test_counts[test_idx] + new_counts[new_idx] > proportion * 1.3:
+                return False
     return True
