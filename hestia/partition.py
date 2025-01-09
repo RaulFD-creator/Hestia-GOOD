@@ -97,15 +97,15 @@ def ccpart(
                 train.extend(remaining_indices)
 
     # Verbose output
-    if verbose > 0:
+    if verbose > 2:
         print(f'Proportion train: {(len(train) / size) * 100:.2f} %')
         print(f'Proportion test: {(len(test) / size) * 100:.2f} %')
         print(f'Proportion valid: {(len(valid) / size) * 100:.2f} %')
 
     # Warnings if the sizes of partitions are smaller than expected
-    if len(test) < expected_test * 0.9:
+    if len(test) < expected_test * 0.9 and verbose > 1:
         print(f'Warning: Proportion of test partition is smaller than expected: {(len(test) / size) * 100:.2f} %')
-    if len(valid) < expected_valid * 0.9:
+    if len(valid) < expected_valid * 0.9 and verbose > 1:
         print(f'Warning: Proportion of validation partition is smaller than expected: {(len(valid) / size) * 100:.2f} %')
 
     if valid_size > 0:

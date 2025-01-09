@@ -62,7 +62,7 @@ def generate_clusters(
         raise NotImplementedError(
             f'Clustering algorithm: {cluster_algorithm} is not supported'
         )
-    if verbose > 1:
+    if verbose > 2:
         print(f'Clustering has taken {time.time() - start:.3f} s to compute.')
 
     return cluster_df
@@ -168,7 +168,7 @@ def _connected_components_clustering(
                                      return_labels=True)
     cluster_df = [{'cluster': labels[i],
                    'member': i} for i in range(labels.shape[0])]
-    if verbose > 0:
+    if verbose > 2:
         print('Clustering has generated:',
               f'{n:,d} connected components for',
               f'{len(df):,} entities')
