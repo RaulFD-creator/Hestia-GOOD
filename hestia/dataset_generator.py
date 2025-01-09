@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
+import polars as pl
 from tqdm import tqdm
 
 from hestia.similarity import (sequence_similarity_mmseqs,
@@ -39,7 +40,8 @@ class SimArguments:
         query_embds: Optional[np.ndarray] = None,
         target_embds: Optional[np.ndarray] = None,
         target_df: Optional[pd.DataFrame] = None,
-        needle_config: Optional[dict] = None
+        needle_config: Optional[dict] = None,
+        **kwargs
     ):
         self.data_type = data_type
         self.field_name = field_name
@@ -199,7 +201,7 @@ class HestiaGenerator:
         }
         pickle.dump(output, open(output_path, 'wb'))
 
-    def calculate_similarity(self, sim_args: SimArguments) -> pd.DataFrame:
+    def calculate_similarity(self, sim_args: SimArguments) -> pl.DataFrame:
         """Calculate pairwise similarity between all the elements in the dataset.
 
         :param sim_args: See similarity arguments entry.
@@ -510,8 +512,9 @@ class HestiaGenerator:
     def calculate_augood(
         self, results: Dict[float, float],
         target_df: pd.DataFrame, target_field_name: Optional[str],
-        target_embds: Optional[np.ndarray] = None
-    ) -> Tuple[np.ndarray, float]:
+        target_embds: Optional[np.ndarray] = None,
+        return_weights: bool = False
+    ) -> Union[Tuple[np.ndarray, float], Tuple[np.ndarray, float, np.ndarray]]:
         """Calculate the 'area under the GOOD curve' (AU-GOOD) metric.
 
         This function calculates an AU-GOOD score by computing a weighted metric from similarity values
@@ -529,15 +532,25 @@ class HestiaGenerator:
         :type target_field_name: Optional[str]
         :param target_embds: A NumPy array containing the target embeddings for similarity calculation.
         :type target_embds: Optional[np.ndarray]
+        :param return_weights: Return histogram values for train-deployment similarities
+        :type return_weights: bool
+
         :return: A tuple containing:
                 - `good_curve` (np.ndarray): Array of weighted values representing the GOOD curve.
                 - `au_good` (float): The calculated area under the GOOD curve.
-        :rtype: Tuple[np.ndarray, float]
+                and optionally:
+                - `weights` (np.ndarray): Array of weights representing train-deployment similarities
+        :rtype: Union[Tuple[np.ndarray, float], Tuple[np.ndarray, float, np.ndarray]]
         """
-        t_sim_args = self.sim_args
+        if self.sim_args is None:
+            t_sim_args = SimArguments(**self.metadata['similarity_metric'])
+        else:
+            t_sim_args = self.sim_args
         target_df[t_sim_args.field_name] = target_df[target_field_name]
         t_sim_args.target_df = target_df
         t_sim_df = self.calculate_similarity(t_sim_args)
+        t_sim_df = t_sim_df.to_pandas()
+
         bins, values, weights = [], [], []
 
         for key, value in results.items():
@@ -545,12 +558,11 @@ class HestiaGenerator:
                 continue
             bins.append(float(key))
             values.append(float(value))
-
         bins, values = np.array(bins), np.array(values)
         rows = []
-        for index in range(len(t_sim_df)):
-            i = t_sim_df[t_sim_df['query'] == index].copy()
-            rows.append(i['metric'].max())
+        t_sim_df_q_group = t_sim_df.groupby('query')
+        for _, v in t_sim_df_q_group:
+            rows.append(v['metric'].max())
 
         rows = np.array(rows)
         for idx, bin in enumerate(bins):
@@ -564,7 +576,10 @@ class HestiaGenerator:
         weights = weights / weights.sum()
         good_curve = weights * values
         au_good = np.dot(weights, values)
-        return good_curve, au_good
+        if return_weights:
+            return good_curve, au_good, weights
+        else:
+            return good_curve, au_good
 
     @staticmethod
     def compare_models(
