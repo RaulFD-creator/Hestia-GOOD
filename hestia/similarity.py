@@ -341,7 +341,8 @@ def molecular_similarity(
                     raise RuntimeError(job.exception())
                 result = job.result()
                 fps.append(result)
-        pbar.close()
+        if verbose > 1:
+            pbar.close()
         return fps
 
     if (field_name not in df_query.columns):
