@@ -14,7 +14,7 @@ from hestia.similarity import (sequence_similarity_mmseqs,
                                molecular_similarity,
                                embedding_similarity,
                                protein_structure_similarity)
-from hestia.partition import random_partition, ccpart, graph_part
+from hestia.partition import random_partition, ccpart, graph_part, butina
 
 
 class SimArguments:
@@ -118,7 +118,8 @@ class HestiaGenerator:
     def get_partition(self, partition: Union[str, float]) -> dict:
         return self.partitions[partition]
 
-    def get_partitions(self, filter: Union[bool, int, float] = False) -> dict:
+    def get_partitions(self, filter: Union[bool, int, float] = False,
+                       return_dict: bool = False) -> dict:
         out_partitions = {}
 
         if isinstance(filter, bool) and filter:
@@ -134,8 +135,10 @@ class HestiaGenerator:
             if len(part['test']) < thresh:
                 continue
             out_partitions[key] = part
-
-        return out_partitions.items()
+        if return_dict:
+            return out_partitions
+        else:
+            return out_partitions.items()
 
     def from_precalculated(self, data_path: str):
         """Load partition indexes if they have already being calculated.
@@ -309,6 +312,7 @@ class HestiaGenerator:
         valid_size: Optional[float] = 0.1,
         partition_algorithm: Optional[str] = 'ccpart',
         random_state: Optional[int] = 42,
+        verbose: int = 1,
         n_partitions: Optional[int] = None
     ):
         """
@@ -332,9 +336,14 @@ class HestiaGenerator:
         :type test_size: Optional[float], optional
         :param valid_size: The proportion of the training set to allocate to the validation set. Defaults to 0.1.
         :type valid_size: Optional[float], optional
+        :param verbose: Verbosity level for process logging, where higher values increase output detail.
+        :type verbose: int, optional
         :param partition_algorithm: The partitioning algorithm to use. Options are:
-                                - `'ccpart'`: Community detection partitioning algorithm.
-                                - `'graph_part'`: Graph-based partitioning.
+                                - `'ccpart'`: Connected components algorithm that puts in testing the smallest
+                                unconnected clusters.
+                                - `'graph_part'`: GraphPart partitioning.
+                                - `'butina'`: Butina split - Connected components algorithm that puts in testing
+                                random clusters.
                                 Defaults to `'ccpart'`.
         :type partition_algorithm: Optional[str], optional
         :param random_state: The random seed for reproducibility. Defaults to 42.
@@ -376,10 +385,10 @@ class HestiaGenerator:
         if self.verbose:
             print('Calculating partitions...')
 
-        if partition_algorithm not in ['ccpart', 'graph_part']:
+        if partition_algorithm not in ['ccpart', 'graph_part', 'butina']:
             raise ValueError(
                 f'Partition algorithm: {partition_algorithm} is not ' +
-                'supported. Try using: `ccpart` or `graph_part`.'
+                'supported. Try using: `ccpart`, `butina, or `graph_part`.'
             )
         min_threshold = int(min_threshold * 100)
         threshold_step = int(threshold_step * 100)
@@ -391,7 +400,16 @@ class HestiaGenerator:
                     label_name=label_name,
                     test_size=test_size,
                     threshold=th / 100,
-                    sim_df=sim_df, verbose=2
+                    sim_df=sim_df, verbose=verbose
+                )
+                th_parts = (train, test)
+            elif partition_algorithm == 'butina':
+                train, test, clusters = butina(
+                    self.data,
+                    label_name=label_name,
+                    test_size=test_size,
+                    threshold=th / 100,
+                    sim_df=sim_df, verbose=verbose
                 )
                 th_parts = (train, test)
             elif partition_algorithm == 'graph_part':
