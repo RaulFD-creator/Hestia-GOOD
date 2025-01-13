@@ -43,6 +43,78 @@ def random_partition(
     return train_df, test_df
 
 
+def butina(
+    df: pd.DataFrame,
+    sim_df: pd.DataFrame,
+    field_name: str = None,
+    label_name: str = None,
+    test_size: float = 0.2,
+    valid_size: float = 0.0,
+    threshold: float = 0.3,
+    verbose: int = 0,
+    seed: int = 0,
+    filter_smaller: Optional[bool] = True   
+) -> Union[Tuple[list, list, list], Tuple[list, list, list, list]]:
+    size = len(df)
+    expected_test = test_size * size
+    expected_valid = valid_size * size
+
+    labels = df[label_name].to_numpy() if label_name else None
+
+    # Generate cluster assignments
+    cluster_df = generate_clusters(df, field_name=field_name,
+                                   threshold=threshold,
+                                   verbose=verbose,
+                                   cluster_algorithm='connected_components',
+                                   sim_df=sim_df,
+                                   filter_smaller=filter_smaller)
+
+    partition_labs = cluster_df.cluster.to_numpy()
+    unique_parts, part_counts = np.unique(partition_labs, return_counts=True)
+    # sorted_parts = unique_parts[np.argsort(part_counts)]
+    np.random.seed(seed)
+    np.random.shuffle(unique_parts)
+    # Initialize empty lists for train, test, and valid sets
+    test = []
+    valid = []
+    train = []
+
+    # Precompute indices for test and valid partitions
+    for part in unique_parts:
+        part_indices = np.where(partition_labs == part)[0]
+
+        if _balanced_labels(labels, part_indices, test, test_size, size):
+            test.extend(part_indices)
+
+    # Avoid test data points in valid set
+    for part in unique_parts:
+        part_indices = np.where(partition_labs == part)[0]
+        remaining_indices = [i for i in part_indices if i not in test]
+
+        if remaining_indices:
+            if _balanced_labels(labels, remaining_indices, valid, valid_size, size) and valid_size > 0:
+                valid.extend(remaining_indices)
+            else:
+                train.extend(remaining_indices)
+
+    # Verbose output
+    if verbose > 2:
+        print(f'Proportion train: {(len(train) / size) * 100:.2f} %')
+        print(f'Proportion test: {(len(test) / size) * 100:.2f} %')
+        print(f'Proportion valid: {(len(valid) / size) * 100:.2f} %')
+
+    # Warnings if the sizes of partitions are smaller than expected
+    if len(test) < expected_test * 0.9 and verbose > 1:
+        print(f'Warning: Proportion of test partition is smaller than expected: {(len(test) / size) * 100:.2f} %')
+    if len(valid) < expected_valid * 0.9 and verbose > 1:
+        print(f'Warning: Proportion of validation partition is smaller than expected: {(len(valid) / size) * 100:.2f} %')
+
+    if valid_size > 0:
+        return train, test, valid, partition_labs
+    else:
+        return train, test, partition_labs
+
+
 def ccpart(
     df: pd.DataFrame,
     sim_df: pd.DataFrame,
