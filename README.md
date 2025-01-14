@@ -3,15 +3,15 @@
 
   <p>Computational tool for generating generalisation-evaluating evaluation sets.</p>
   
-  <a href="https://ibm.github.io/Hestia-OOD/"><img alt="Tutorials" src="https://img.shields.io/badge/docs-tutorials-green" /></a>
-  <a href="https://github.com/IBM/Hestia-OOD/blob/main/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/IBM/Hestia-OOD" /></a>
-  <a href="https://pypi.org/project/hestia-ood/"><img src="https://img.shields.io/pypi/v/hestia-ood" /></a>
-  <a href="https://pypi.org/project/hestia-ood/"><img src="https://img.shields.io/pypi/dm/hestia-ood" /></a>
+  <a href="https://ibm.github.io/Hestia-gOOD/"><img alt="Tutorials" src="https://img.shields.io/badge/docs-tutorials-green" /></a>
+  <a href="https://github.com/IBM/Hestia-GOOD/blob/main/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/IBM/Hestia-OOD" /></a>
+  <a href="https://pypi.org/project/hestia-good/"><img src="https://img.shields.io/pypi/v/hestia-good" /></a>
+  <a href="https://pypi.org/project/hestia-good/"><img src="https://img.shields.io/pypi/dm/hestia-good" /></a>
 
 </div>
 
-- **Documentation:**  <a href="https://ibm.github.io/Hestia-OOD/" target="_blank">https://ibm.github.io/Hestia-OOD</a>
-- **Source Code:** <a href="https://github.com/IBM/Hestia-OOD" target="_blank">https://github.com/IBM/Hestia-OOD</a>
+- **Documentation:**  <a href="https://ibm.github.io/Hestia-GOOD/" target="_blank">https://ibm.github.io/Hestia-GOOD</a>
+- **Source Code:** <a href="https://github.com/IBM/Hestia-GOOD" target="_blank">https://github.com/IBM/Hestia-GOOD</a>
 - **Paper pre-print:** <a href="https://www.biorxiv.org/content/10.1101/2024.03.14.584508" target="_blank">https://www.biorxiv.org/content/10.1101/2024.03.14.584508</a>
 
 ## Contents
