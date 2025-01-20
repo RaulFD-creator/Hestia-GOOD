@@ -5,8 +5,8 @@
   
   <a href="https://ibm.github.io/Hestia-GOOD/"><img alt="Tutorials" src="https://img.shields.io/badge/docs-tutorials-green" /></a>
   <a href="https://github.com/IBM/Hestia-GOOD/blob/main/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/IBM/Hestia-GOOD" /></a>
-  <a href="https://pypi.org/project/hestia-ood/"><img src="https://img.shields.io/pypi/v/hestia-ood" /></a>
-  <a href="https://pypi.org/project/hestia-ood/"><img src="https://img.shields.io/pypi/dm/hestia-ood" /></a>
+  <a href="https://pypi.org/project/hestia-good/"><img src="https://img.shields.io/pypi/v/hestia-good" /></a>
+  <a href="https://pypi.org/project/hestia-good/"><img src="https://img.shields.io/pypi/dm/hestia-good" /></a>
 
 </div>
 
@@ -40,13 +40,13 @@ conda activate hestia
 
 
 ```bash
-pip install hestia-ood
+pip install hestia-good
 ```
 
 #### 1.2. Directly from source
 
 ```bash
-pip install git+https://github.com/IBM/Hestia-OOD
+pip install git+https://github.com/IBM/Hestia-GOOD
 ```
 
 ### 3. Optional dependencies
