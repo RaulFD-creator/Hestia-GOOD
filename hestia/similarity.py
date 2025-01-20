@@ -535,9 +535,10 @@ def protein_structure_similarity(
     if df_target is None:
         df_target = df_query
     tmp_dir = f'hestia_tmp_{time.time()}'
+
     if os.path.isdir(tmp_dir):
         shutil.rmtree(tmp_dir)
-    os.mkdir(tmp_dir)
+    os.makedirs(tmp_dir)
     if verbose > 2:
         mmseqs_v = 3
     else:
@@ -575,7 +576,7 @@ def protein_structure_similarity(
     prefilter = '0' if prefilter else '2'
 
     subprocess.run([foldseek, 'search', db_query, db_target, alignment_db,
-                    'tmp', '-s', '9.5', '-a', '-e', 'inf',
+                    f'{tmp_dir}/tmp', '-s', '9.5', '-a', '-e', 'inf',
                     '--seq-id-mode', denominator, '--threads',
                     str(threads), '--alignment-type', representation,
                     '--prefilter-mode', prefilter, '-v', str(mmseqs_v)
@@ -602,7 +603,8 @@ def protein_structure_similarity(
     else:
         df = df.rename({'prob': 'metric'})
     df = df.with_columns(pl.col("metric").map_elements(
-        lambda x: qry2idx[x.split('.pdb')[0].split('_')[0]]
+        lambda x: qry2idx[x.split('.pdb')[0].split('_')[0]],
+        return_dtype=pl.Int64
     ))
     df = df.with_columns(pl.col('query').map_elements(
         lambda x: qry2idx[x.split('.pdb')[0].split('_')[0]],
@@ -618,7 +620,7 @@ def protein_structure_similarity(
         if filename is None:
             filename = time.time()
         df.write_csv(f'{filename}.csv.gz', compression='gzip')
-
+    shutil.rmtree(tmp_dir)
     return df
 
 
