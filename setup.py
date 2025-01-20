@@ -26,7 +26,7 @@ setup(
     python_requires='>=3.9',
     classifiers=[
     ],
-    description="Suite of tools for analysing the independence between training and evaluation biosequence datasets and to generate new generalisation-evaluating hold-out partitions",
+    description="Independent evaluation set construction for trustworthy ML models in biochemistry",
     entry_points={
     },
     install_requires=requirements,
@@ -41,6 +41,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/IBM/Hestia-GOOD',
-    version='0.0.37',
+    version='0.1.0',
     zip_safe=False,
 )
