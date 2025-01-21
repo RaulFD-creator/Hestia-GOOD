@@ -116,13 +116,7 @@ class HestiaGenerator:
             print(f'Number of items in data: {len(self.data):,}')
 
     def get_partition(self, partition: Union[str, float]) -> dict:
-        out = {}
-        part = self.partition_index[partition]
-        out['train'] = self.partitions[:, part] == 0
-        out['test'] = self.partitions[:, part] == -1
-        if (self.partitions[:, part] == 1).sum() > 1:
-            out['valid'] = self.partitions[:, part] == 1
-        return out
+        return self.partitions[partition]
 
     def get_partitions(self, filter: Union[bool, int, float] = False,
                        return_dict: bool = False) -> dict:
@@ -137,17 +131,10 @@ class HestiaGenerator:
         else:
             thresh = 0
 
-        for key, part in self.partition_index.items():
-            if (self.partitions[:, part] == -1).sum() < thresh:
+        for key, part in self.partitions.items():
+            if len(part['test']) < thresh:
                 continue
-            out_partitions[key] = {
-                'train': self.partitions[:, part] == 0,
-                'test': self.partitions[:, part] == -1,
-            }
-            if (self.partitions[:, part] == 1).sum() > 0:
-                out_partitions[key].update({
-                    'valid': self.partitions[:, part] == 1
-                })
+            out_partitions[key] = part
         if return_dict:
             return out_partitions
         else:
@@ -164,7 +151,6 @@ class HestiaGenerator:
         input = pickle.load(open(data_path, 'rb'))
         if 'partitions' in input:
             self.partitions = input['partitions']
-            self.partition_index = input['partition_index']
         else:
             self.partitions = input
 
@@ -184,6 +170,14 @@ class HestiaGenerator:
                 print('Warning: there is no metadata available regarding ' +
                       'the similarity metric.')
 
+        new_dict = {}
+        for key, value in self.partitions.items():
+            if key != 'random':
+                new_dict[float(key)] = value
+            else:
+                new_dict[key] = value
+        self.partitions = new_dict
+
     def save_precalculated(self, output_path: str,
                            include_metada: Optional[bool] = True):
         """Save partition indexes to disk for quickier re-running.
@@ -191,9 +185,21 @@ class HestiaGenerator:
         :param output_path: Path where partition indexes should be saved.
         :type output_path: str
         """
+        clusters = {th: c['clusters'] for th, c in self.partitions.items()
+                    if th != 'random'}
+        for th, c in self.partitions.items():
+            if th != 'random':
+                del c['clusters']
+
+        if include_metada:
+            self.metadata['cluster_composition'] = clusters
+        else:
+            self.metadata['cluster_composition'] = {
+                cluster.item: n_elements.item for cluster, n_elements in
+                zip(np.unique(clusters, return_counts=True))
+            }
         output = {
             'partitions': self.partitions,
-            'partition_index': self.partition_index,
             'metadata': self.metadata
         }
         pickle.dump(output, open(output_path, 'wb'))
@@ -386,12 +392,8 @@ class HestiaGenerator:
             )
         min_threshold = int(min_threshold * 100)
         threshold_step = int(threshold_step * 100)
-        steps = ((100 - min_threshold) // threshold_step) + 1
-        self.partitions = np.zeros((len(self.data), steps), dtype=np.int8)
-        self.clusters = {}
-        self.partition_index = {}
 
-        for idx, th in enumerate(tqdm(range(min_threshold, 100, threshold_step))):
+        for th in tqdm(range(min_threshold, 100, threshold_step)):
             if partition_algorithm == 'ccpart':
                 train, test, clusters = ccpart(
                     self.data,
@@ -431,23 +433,18 @@ class HestiaGenerator:
                         self.data.iloc[th_parts[0]].reset_index(drop=True),
                         test_size=valid_size, random_state=random_state
                     )
-                    self.partition_index[th / 100] = idx
-                    u_clusters = np.unique(clusters, return_counts=True)
-                    clusters = np.concatenate([u_clusters[0], u_clusters[1]],
-                                              dtype=np.int32)
-                    self.clusters[th / 100] = clusters
-                    self.partitions[train_th_parts[0], idx] = 0
-                    self.partitions[train_th_parts[1], idx] = 1
-                    self.partitions[test] = -1
-
+                    self.partitions[th / 100] = {
+                        'train': train_th_parts[0],
+                        'valid': train_th_parts[1],
+                        'test': th_parts[1],
+                        'clusters': clusters
+                    }
                 else:
-                    self.partition_index[th / 100] = idx
-                    u_clusters = np.unique(clusters, return_counts=True)
-                    clusters = np.concatenate([u_clusters[0], u_clusters[1]],
-                                              dtype=np.int32)
-                    self.clusters[th / 100] = clusters
-                    self.partitions[th_parts[0], idx] = 0
-                    self.partitions[th_parts[1], idx] = -1
+                    self.partitions[th / 100] = {
+                        'train': th_parts[0],
+                        'test': th_parts[1],
+                        'clusters': clusters
+                    }
             else:
                 th_parts = [[i[0] for i in part] for part in th_parts]
                 self.partitions[th / 100] = {
@@ -461,14 +458,16 @@ class HestiaGenerator:
                 self.data.iloc[random[0]].reset_index(drop=True),
                 test_size=valid_size, random_state=random_state
             )
-            self.partition_index['random'] = idx + 1
-            self.partitions[train_random[0], idx + 1] = 0
-            self.partitions[train_random[1], idx + 1] = 1
-            self.partitions[random[1], idx + 1] = -1
+            self.partitions['random'] = {
+                'train': train_random[0],
+                'valid': train_random[1],
+                'test': random[1]
+            }
         else:
-            self.partitions[random[0]] == 0
-            self.partitions[random[1]] == -1
-
+            self.partitions['random'] = {
+                'train': random[0],
+                'test': random[1]
+            }
         sim_metadata = vars(sim_args)
         if sim_args.data_type == 'embedding':
             del sim_metadata['query_embds']
