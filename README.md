@@ -42,13 +42,13 @@ conda activate hestia
 
 
 ```bash
-pip install hestia-ood
+pip install hestia-good
 ```
 
 #### 1.2. Directly from source
 
 ```bash
-pip install git+https://github.com/IBM/Hestia-OOD
+pip install git+https://github.com/IBM/Hestia-GOOD
 ```
 
 ### 3. Optional dependencies
