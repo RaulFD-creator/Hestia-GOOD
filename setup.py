@@ -15,7 +15,8 @@ requirements = [
     'pandas',
     'polars',
     'numpy',
-    'tqdm'
+    'tqdm',
+    'pyarrow'
 ]
 
 test_requirements = requirements

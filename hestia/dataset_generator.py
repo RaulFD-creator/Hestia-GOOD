@@ -187,17 +187,12 @@ class HestiaGenerator:
         """
         clusters = {th: c['clusters'] for th, c in self.partitions.items()
                     if th != 'random'}
-        for th, c in self.partitions.items():
-            if th != 'random':
-                del c['clusters']
 
         if include_metada:
             self.metadata['cluster_composition'] = clusters
         else:
-            self.metadata['cluster_composition'] = {
-                cluster.item: n_elements.item for cluster, n_elements in
-                zip(np.unique(clusters, return_counts=True))
-            }
+            self.metadata['cluster_composition'] = clusters
+
         output = {
             'partitions': self.partitions,
             'metadata': self.metadata
@@ -640,3 +635,9 @@ class HestiaGenerator:
                     continue
                 matrix[idx, idx2] = test(value, value2, alternative='greater')[1]
         return matrix
+
+    def evaluate_curve(self, thresholds: np.ndarray, performance: np.ndarray) -> Tuple[float, float]:
+        from scipy.stats import spearmanr
+        corr = spearmanr(thresholds, performance)[0]
+        dr = max(thresholds) - min(thresholds)
+        return corr, dr
