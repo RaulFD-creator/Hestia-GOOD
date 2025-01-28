@@ -469,11 +469,14 @@ class HestiaGenerator:
                 'train': random[0],
                 'test': random[1]
             }
-        sim_metadata = vars(sim_args)
-        if sim_args.data_type == 'embedding':
-            del sim_metadata['query_embds']
-            if 'target_embds' in sim_metadata:
-                del sim_metadata['target_embds']
+        if sim_args is None:
+            sim_metadata = None
+        else:
+            sim_metadata = vars(sim_args)
+            if sim_args.data_type == 'embedding':
+                del sim_metadata['query_embds']
+                if 'target_embds' in sim_metadata:
+                    del sim_metadata['target_embds']
 
         self.metadata = {
             'partition_algorithm': {
