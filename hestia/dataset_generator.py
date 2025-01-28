@@ -94,6 +94,9 @@ class SimArguments:
         else:
             raise NotImplementedError(f"Data type: {data_type} not implemented.")
 
+    def __str__(self):
+        return str(self.__dict__)
+
 
 class HestiaGenerator:
     """Class for generating multiple Dataset
