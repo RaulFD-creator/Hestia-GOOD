@@ -185,8 +185,11 @@ class HestiaGenerator:
         :param output_path: Path where partition indexes should be saved.
         :type output_path: str
         """
-        clusters = {th: c['clusters'] for th, c in self.partitions.items()
-                    if th != 'random'}
+        try:
+            clusters = {th: c['clusters'] for th, c in self.partitions.items()
+                        if th != 'random'}
+        except KeyError:
+            clusters = self.metadata['cluster_composition']
 
         if include_metada:
             self.metadata['cluster_composition'] = clusters
