@@ -602,10 +602,7 @@ def protein_structure_similarity(
         df = df.rename({'alntmscore': 'metric'})
     else:
         df = df.rename({'prob': 'metric'})
-    df = df.with_columns(pl.col("metric").map_elements(
-        lambda x: qry2idx[x.split('.pdb')[0].split('_')[0]],
-        return_dtype=pl.Int64
-    ))
+
     df = df.with_columns(pl.col('query').map_elements(
         lambda x: qry2idx[x.split('.pdb')[0].split('_')[0]],
         return_dtype=pl.Int64
