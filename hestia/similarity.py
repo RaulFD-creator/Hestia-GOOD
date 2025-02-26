@@ -273,7 +273,7 @@ def molecular_similarity(
 
             if mol is None:
                 print(f"SMILES: `{smile}` could not be processed. Will be substituted by `{smile[1:-1]}`")
-                return _get_fp(smile[1:-1])
+                return _get_fp(smile[1:]) + _get_fp(smile[:-1])
 
             if sim_function in ['dice', 'tanimoto', 'sokal', 'rogot-goldberg',
                                 'cosine']:
