@@ -12,7 +12,7 @@ nav:
   - Dataset generator: dataset_generator/
 - Code reference:
   - Dataset generator:
-      - datasetgenerator.md
+      - dataset_generator.md
   - Similarity calculation:
       - similarity.md
   - Partitioning algorithms:
