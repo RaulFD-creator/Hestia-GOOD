@@ -272,8 +272,8 @@ def molecular_similarity(
             mol = Chem.MolFromSmiles(smile, sanitize=True)
 
             if mol is None:
-                print(f"SMILES: `{smile}` could not be processed. Will be substituted by `{smile[1:-1]}`")
-                return _get_fp(smile[1:]) + _get_fp(smile[:-1])
+                print(f"SMILES: `{smile}` could not be processed. Will be substituted by `C`")
+                return _get_fp("C")
 
             if sim_function in ['dice', 'tanimoto', 'sokal', 'rogot-goldberg',
                                 'cosine']:
@@ -289,6 +289,10 @@ def molecular_similarity(
 
         def _get_fp(smile: str):
             mol = Chem.MolFromSmiles(smile)
+            if mol is None:
+                print(f"SMILES: `{smile}` could not be processed. Will be substituted by `C`")
+                return _get_fp("C")
+
             fp = rdMolDescriptors.GetMACCSKeysFingerprint(mol)
             if sim_function in ['dice', 'tanimoto', 'sokal', 'rogot-goldberg',
                                 'cosine']:
@@ -304,6 +308,10 @@ def molecular_similarity(
 
         def _get_fp(smile: str):
             mol = Chem.MolFromSmiles(smile, sanitize=True)
+            if mol is None:
+                print(f"SMILES: `{smile}` could not be processed. Will be substituted by `C`")
+                return _get_fp("C")
+
             fp = encode(mol, max_radius=radius,
                         n_permutations=bits, mapping=False)
             return fp
@@ -317,6 +325,9 @@ def molecular_similarity(
         def _get_fp(smiles: str):
             fp = []
             mol = Chem.MolFromSmiles(smiles, sanitize=True)
+            if mol is None:
+                print(f"SMILES: `{smiles}` could not be processed. Will be substituted by `C`")
+                return _get_fp("C")
             fp.append(Lip.NumHAcceptors(mol))
             fp.append(Lip.NumHDonors(mol))
             fp.append(Lip.NumHeteroatoms(mol))
