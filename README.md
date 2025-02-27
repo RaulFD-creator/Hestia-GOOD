@@ -119,21 +119,21 @@ pip install rdkit
 The HestiaDatasetGenerator allows for the easy generation of training/validation/evaluation partitions with different similarity thresholds. Enabling the estimation of model generalisation capabilities. It also allows for the calculation of the ABOID (Area between the similarity-performance curve (Out-of-distribution) and the In-distribution performance).
 
 ```python
-from hestia.dataset_generator import HestiaDatasetGenerator, SimilarityArguments
+from hestia.dataset_generator import HestiaGenerator, SimArguments
 
 # Initialise the generator for a DataFrame
-generator = HestiaDatasetGenerator(df)
+generator = HestiaGenerator(df)
 
 # Define the similarity arguments (for more info see the documentation page https://ibm.github.io/Hestia-OOD/datasetgenerator)
 
 # Similarity arguments for protein similarity
-prot_args = SimilarityArguments(
+prot_args = SimArguments(
     data_type='sequence', field_name='sequence',
     alignment_algorithm='mmseqs2+prefilter', verbose=3
 )
 
 # Similarity arguments for molecular similarity
-mol_args = SimilarityArguments(
+mol_args = SimArguments(
     data_type='small molecule', field_name='SMILES',
     fingeprint='mapc', radius=2, bits=2048
 )
@@ -152,9 +152,9 @@ generator.save_precalculated('precalculated_partitions.gz')
 # Load pre-calculated partitions
 generator.from_precalculated('precalculated_partitions.gz')
 
-# Training code
+# Training code (filter partitions with test sets less than 18.5% of total data)
 
-for threshold, partition in generator.get_partitions():
+for threshold, partition in generator.get_partitions(filter=0.185):
     train = df.iloc[partition['train']]
     valid = df.iloc[partition['valid']]
     test = df.iloc[partition['test']]
