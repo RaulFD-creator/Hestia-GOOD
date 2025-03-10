@@ -12,7 +12,7 @@ nav:
   - Dataset generator: dataset_generator/
 - Code reference:
   - Dataset generator:
-      - datasetgenerator.md
+      - dataset_generator.md
   - Similarity calculation:
       - similarity.md
   - Partitioning algorithms:
@@ -68,8 +68,6 @@ plugins:
         options:
           show_source: false
           docstring_style: sphinx
-          docstring_options:
-            ignore_init_summary: yes
           merge_init_into_class: yes
           show_submodules: yes
 - markdownextradata:

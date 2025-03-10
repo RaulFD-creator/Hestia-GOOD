@@ -51,9 +51,9 @@ pip install hestia-good
 pip install git+https://github.com/IBM/Hestia-GOOD
 ```
 
-### 3. Optional dependencies
+### 2. Optional dependencies
 
-#### 3.1. Molecular similarity
+#### 2.1. Molecular similarity
 
 RDKit is a dependency necessary for calculating molecular similarities:
 
@@ -61,7 +61,7 @@ RDKit is a dependency necessary for calculating molecular similarities:
 pip install rdkit
 ```
 
-#### 3.2. Sequence alignment
+#### 2.2. Sequence alignment
 
   - MMSeqs2 [https://github.com/steineggerlab/mmseqs2](https://github.com/steineggerlab/mmseqs2)
   ```bash
@@ -93,7 +93,7 @@ pip install rdkit
 - Windows: Download binaries from [EMBOSS](https://emboss.sourceforge.net/download/) and [MMSeqs2-latest](https://mmseqs.com/latest/mmseqs-win64.zip)
 
 
-#### 3.3. Structure alignment 
+#### 2.3. Structure alignment 
 
   - To use Foldseek [https://github.com/steineggerlab/foldseek](https://github.com/steineggerlab/foldseek):
 
@@ -116,7 +116,7 @@ pip install rdkit
 
 ### 1. DatasetGenerator
 
-The HestiaDatasetGenerator allows for the easy generation of training/validation/evaluation partitions with different similarity thresholds. Enabling the estimation of model generalisation capabilities. It also allows for the calculation of the ABOID (Area between the similarity-performance curve (Out-of-distribution) and the In-distribution performance).
+The HestiaGenerator allows for the easy generation of training/validation/evaluation partitions with different similarity thresholds. Enabling the estimation of model generalisation capabilities. It also allows for the calculation of the ABOID (Area between the similarity-performance curve (Out-of-distribution) and the In-distribution performance). More information in [Dataset Generator docs](https://ibm.github.io/Hestia-GOOD/dataset_generator/).
 
 ```python
 from hestia.dataset_generator import HestiaGenerator, SimArguments
@@ -174,7 +174,7 @@ generator.compare_models(results, statistical_test='wilcoxon')
 
 ### 2. Similarity calculation
 
-Calculating pairwise similarity between the entities within a DataFrame `df_query` or between two DataFrames `df_query` and `df_target` can be achieved through the `calculate_similarity` function:
+Calculating pairwise similarity between the entities within a DataFrame `df_query` or between two DataFrames `df_query` and `df_target` can be achieved through the `calculate_similarity` function. More details about similarity calculation can be found in the [Similarity calculation documentation](https://ibm.github.io/Hestia-GOOD/similarity/).
 
 ```python
 from hestia.similarity import sequence_similarity_mmseqs
@@ -188,11 +188,11 @@ df_query = pd.read_csv('example.csv')
 sim_df = sequence_similarity_mmseqs(df_query, field_name='sequence', prefilter=True)
 ```
 
-More details about similarity calculation can be found in the [Similarity calculation documentation](https://ibm.github.io/Hestia-OOD/similarity/).
+
 
 ### 3. Clustering
 
-Clustering the entities within a DataFrame `df` can be achieved through the `generate_clusters` function:
+Clustering the entities within a DataFrame `df` can be achieved through the `generate_clusters` function. There are three clustering algorithms currently supported: `CDHIT`, `greedy_cover_set`, or `connected_components`. More details about clustering can be found in the [Clustering documentation](https://ibm.github.io/Hestia-GOOD/clustering/).
 
 ```python
 from hestia.similarity import sequence_similarity_mmseqs
@@ -205,12 +205,9 @@ clusters_df = generate_clusters(df, field_name='sequence', sim_df=sim_df,
                                 cluster_algorithm='CDHIT')
 ```
 
-There are three clustering algorithms currently supported: `CDHIT`, `greedy_cover_set`, or `connected_components`. More details about clustering can be found in the [Clustering documentation](https://ibm.github.io/Hestia-OOD/clustering/).
-
-
 ### 4. Partitioning
 
-Partitioning the entities within a DataFrame `df` into a training and an evaluation subsets can be achieved through 4 different functions: `ccpart`, `graph_part`, `reduction_partition`, and `random_partition`. An example of how `cc_part` would be used is:
+Partitioning the entities within a DataFrame `df` into a training and an evaluation subsets can be achieved through 4 different functions: `ccpart`, `graph_part`, `reduction_partition`, and `random_partition`. More details about partitioing algorithms can be found in [Partitionind documentation](https://ibm.github.io/Hestia-GOOD/partitioning). An example of how `cc_part` would be used is:
 
 ```python
 from hestia.similarity import sequence_similarity_mmseqs
