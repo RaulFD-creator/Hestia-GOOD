@@ -8,7 +8,7 @@ def similarity_reduction(
     sim_df: pd.DataFrame,
     field_name: str,
     clustering_mode: str = "CDHIT",
-    threshold: float = 0.3,
+    threshold: float = 0.9,
     verbose: int = 2,
 ) -> pd.DataFrame:
     if 'connected_components' == clustering_mode:
