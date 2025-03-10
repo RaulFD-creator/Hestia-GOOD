@@ -43,7 +43,7 @@ def random_partition(
     return train_df, test_df
 
 
-def butina(
+def ccpart_random(
     df: pd.DataFrame,
     sim_df: pd.DataFrame,
     field_name: str = None,
