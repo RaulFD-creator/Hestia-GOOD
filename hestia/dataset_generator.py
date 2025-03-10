@@ -14,7 +14,7 @@ from hestia.similarity import (sequence_similarity_mmseqs,
                                molecular_similarity,
                                embedding_similarity,
                                protein_structure_similarity)
-from hestia.partition import random_partition, ccpart, graph_part, butina
+from hestia.partition import random_partition, ccpart, ccpart_random, graph_part
 
 
 class SimArguments:
@@ -343,7 +343,7 @@ class HestiaGenerator:
                                 - `'ccpart'`: Connected components algorithm that puts in testing the smallest
                                 unconnected clusters.
                                 - `'graph_part'`: GraphPart partitioning.
-                                - `'butina'`: Butina split - Connected components algorithm that puts in testing
+                                - `'ccpart_random'`: Connected components algorithm that puts in testing
                                 random clusters.
                                 Defaults to `'ccpart'`.
         :type partition_algorithm: Optional[str], optional
@@ -386,10 +386,10 @@ class HestiaGenerator:
         if self.verbose:
             print('Calculating partitions...')
 
-        if partition_algorithm not in ['ccpart', 'graph_part', 'butina']:
+        if partition_algorithm not in ['ccpart', 'graph_part', 'ccpart_random']:
             raise ValueError(
                 f'Partition algorithm: {partition_algorithm} is not ' +
-                'supported. Try using: `ccpart`, `butina, or `graph_part`.'
+                'supported. Try using: `ccpart`, `ccpart_random, or `graph_part`.'
             )
         min_threshold = int(min_threshold * 100)
         threshold_step = int(threshold_step * 100)
@@ -404,8 +404,8 @@ class HestiaGenerator:
                     sim_df=sim_df, verbose=verbose
                 )
                 th_parts = (train, test)
-            elif partition_algorithm == 'butina':
-                train, test, clusters = butina(
+            elif partition_algorithm == 'ccpart_random':
+                train, test, clusters = ccpart_random(
                     self.data,
                     label_name=label_name,
                     test_size=test_size,
