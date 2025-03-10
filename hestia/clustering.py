@@ -3,6 +3,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+import polars as pl
 from scipy.sparse.csgraph import connected_components
 from tqdm import tqdm
 
@@ -12,7 +13,7 @@ from hestia.similarity import sim_df2mtx
 def generate_clusters(
     df: pd.DataFrame,
     field_name: str,
-    sim_df: pd.DataFrame,
+    sim_df: pl.DataFrame,
     threshold: float = 0.4,
     verbose: int = 0,
     cluster_algorithm: str = 'greedy_incremental',
@@ -29,7 +30,7 @@ def generate_clusters(
     considered similar, defaults to 0.4
     :param sim_df: DataFrame with similarities (`metric`) between
     `query` and `target`, it is the product of `calculate_similarity` function
-    :type sim_df: pd.DataFrame
+    :type sim_df: pl.DataFrame
     :type threshold: float
     :param verbose: How much information will be displayed.
     Options:
@@ -50,6 +51,9 @@ def generate_clusters(
     :rtype: pd.DataFrame
     """
     start = time.time()
+    if isinstance(sim_df, pl.DataFrame):
+        sim_df = sim_df.to_pandas()
+
     if cluster_algorithm in ['greedy_incremental', 'CDHIT']:
         cluster_df = _greedy_incremental_clustering(df, field_name, sim_df,
                                                     threshold, verbose)

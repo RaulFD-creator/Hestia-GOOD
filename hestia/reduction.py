@@ -1,16 +1,17 @@
 import pandas as pd
+import polars as pl
 
 from hestia.clustering import generate_clusters
 
 
 def similarity_reduction(
     df: pd.DataFrame,
-    sim_df: pd.DataFrame,
+    sim_df: pl.DataFrame,
     field_name: str,
     clustering_mode: str = "CDHIT",
     threshold: float = 0.9,
     verbose: int = 2,
-) -> pd.DataFrame:
+) -> pl.DataFrame:
     if 'connected_components' == clustering_mode:
         mssg = 'Similarity reduction is not'
         mssg += ' implemented for connected components.'
