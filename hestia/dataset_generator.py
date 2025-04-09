@@ -22,7 +22,7 @@ class SimArguments:
     """
     def __init__(
         self,
-        data_type: str = 'protein',
+        data_type: str = 'sequence',
         field_name: str = 'sequence',
         min_threshold: float = 0.0,
         threads: int = cpu_count(),
