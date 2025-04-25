@@ -116,7 +116,7 @@ pip install rdkit
 
 ### 1. DatasetGenerator
 
-The HestiaGenerator allows for the easy generation of training/validation/evaluation partitions with different similarity thresholds. Enabling the estimation of model generalisation capabilities. It also allows for the calculation of the ABOID (Area between the similarity-performance curve (Out-of-distribution) and the In-distribution performance). More information in [Dataset Generator docs](https://ibm.github.io/Hestia-GOOD/dataset_generator/).
+The HestiaGenerator allows for the easy generation of training/validation/evaluation partitions with different similarity thresholds. Enabling the estimation of model generalisation capabilities. It also allows for the calculation of the AU-GOOD (Area Under the Generalization Out-Of-Distribution curve). More information in [Dataset Generator docs](https://ibm.github.io/Hestia-GOOD/dataset_generator/).
 
 ```python
 from hestia.dataset_generator import HestiaGenerator, SimArguments
