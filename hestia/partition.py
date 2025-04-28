@@ -54,8 +54,39 @@ def ccpart_random(
     verbose: int = 0,
     seed: int = 0,
     n_bins: int = 10,
-    filter_smaller: Optional[bool] = True   
+    filter_smaller: Optional[bool] = True
 ) -> Union[Tuple[list, list, list], Tuple[list, list, list, list]]:
+    """
+    Partitions a dataset into training, testing, and optional validation sets based on connected 
+    component clustering using a similarity matrix. Ensures clusters are kept intact across splits 
+    and optionally balances label distributions across partitions. Cluesters are assigned to 
+    testing randomly.
+
+    :param df: DataFrame containing the dataset to be partitioned.
+    :type df: pd.DataFrame
+    :param sim_df: DataFrame representing precomputed pairwise similarities between samples.
+    :type sim_df: pd.DataFrame
+    :param field_name: Name of the column in `df` used for clustering; if None, uses `sim_df` directly.
+    :type field_name: str, optional
+    :param label_name: Name of the label column for balancing partitions; if None, no balancing is performed.
+    :type label_name: str, optional
+    :param test_size: Fraction of the dataset to allocate to the test set.
+    :type test_size: float
+    :param valid_size: Fraction of the dataset to allocate to the validation set; set to 0.0 to skip validation split.
+    :type valid_size: float
+    :param threshold: Similarity threshold for connecting components when clustering.
+    :type threshold: float
+    :param verbose: Verbosity level for logging (higher values provide more detailed output).
+    :type verbose: int
+    :param n_bins: Number of bins to discretize continuous labels into for balancing purposes.
+    :type n_bins: int
+    :param filter_smaller: Whether with the similarity metric less is less similar.
+    :type filter_smaller: bool, optional
+    :return:
+        - If `valid_size > 0`: returns (train_indices, test_indices, valid_indices, cluster_assignments)
+        - Otherwise: returns (train_indices, test_indices, cluster_assignments)
+    :rtype: Union[Tuple[list, list, list], Tuple[list, list, list, list]]
+    """
     size = len(df)
     expected_test = test_size * size
     expected_valid = valid_size * size
@@ -129,6 +160,38 @@ def ccpart(
     n_bins: int = 10,
     filter_smaller: Optional[bool] = True
 ) -> Union[Tuple[list, list, list], Tuple[list, list, list, list]]:
+    """
+    Partitions a dataset into training, testing, and optional validation sets based on connected 
+    component clustering using a similarity matrix. Ensures clusters are kept intact across splits 
+    and optionally balances label distributions across partitions. Smallest clusters are iteratively
+    assigned to testing.
+
+    :param df: DataFrame containing the dataset to be partitioned.
+    :type df: pd.DataFrame
+    :param sim_df: DataFrame representing precomputed pairwise similarities between samples.
+    :type sim_df: pd.DataFrame
+    :param field_name: Name of the column in `df` used for clustering; if None, uses `sim_df` directly.
+    :type field_name: str, optional
+    :param label_name: Name of the label column for balancing partitions; if None, no balancing is performed.
+    :type label_name: str, optional
+    :param test_size: Fraction of the dataset to allocate to the test set.
+    :type test_size: float
+    :param valid_size: Fraction of the dataset to allocate to the validation set; set to 0.0 to skip validation split.
+    :type valid_size: float
+    :param threshold: Similarity threshold for connecting components when clustering.
+    :type threshold: float
+    :param verbose: Verbosity level for logging (higher values provide more detailed output).
+    :type verbose: int
+    :param n_bins: Number of bins to discretize continuous labels into for balancing purposes.
+    :type n_bins: int
+    :param filter_smaller: Whether with the similarity metric less is less similar.
+    :type filter_smaller: bool, optional
+
+    :return:
+        - If `valid_size > 0`: returns (train_indices, test_indices, valid_indices, cluster_assignments)
+        - Otherwise: returns (train_indices, test_indices, cluster_assignments)
+    :rtype: Union[Tuple[list, list, list], Tuple[list, list, list, list]]
+    """
 
     size = len(df)
     expected_test = test_size * size
