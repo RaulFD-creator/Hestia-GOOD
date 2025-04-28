@@ -307,6 +307,7 @@ class HestiaGenerator:
         sim_args: Optional[SimArguments] = None,
         sim_df: Optional[pd.DataFrame] = None,
         label_name: Optional[str] = None,
+        label_bins: Optional[int] = 10,
         min_threshold: Optional[float] = 0.,
         threshold_step: Optional[float] = 0.05,
         test_size: Optional[float] = 0.2,
@@ -329,6 +330,9 @@ class HestiaGenerator:
         :type sim_df: Optional[pd.DataFrame], optional
         :param label_name: The name of the label column for the dataset. Defaults to None.
         :type label_name: Optional[str], optional
+        :param label_bins: Number of bins to discretize the label, if the label is continuous (regression).
+            Only with `partition_algorithm`: `ccpart`, `ccpart_random`.
+        :type label_bins: Optional[int], optional
         :param min_threshold: The minimum similarity threshold to start partitioning. Defaults to 0.0.
         :type min_threshold: Optional[float], optional
         :param threshold_step: The step size for varying the similarity threshold during partitioning. Defaults to 0.05.
@@ -400,6 +404,7 @@ class HestiaGenerator:
                     self.data,
                     label_name=label_name,
                     test_size=test_size,
+                    n_bins=label_bins,
                     threshold=th / 100,
                     sim_df=sim_df, verbose=verbose
                 )
@@ -410,6 +415,7 @@ class HestiaGenerator:
                     label_name=label_name,
                     test_size=test_size,
                     threshold=th / 100,
+                    n_bins=label_bins,
                     sim_df=sim_df, verbose=verbose
                 )
                 th_parts = (train, test)

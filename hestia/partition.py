@@ -12,7 +12,7 @@ from hestia.clustering import generate_clusters
 from hestia.reduction import similarity_reduction
 from hestia.utils import (_assign_partitions, _cluster_reassignment,
                           _neighbour_analysis, _balanced_labels,
-                          limited_agglomerative_clustering)
+                          limited_agglomerative_clustering, _discretizer)
 
 
 def random_partition(
@@ -53,6 +53,7 @@ def ccpart_random(
     threshold: float = 0.3,
     verbose: int = 0,
     seed: int = 0,
+    n_bins: int = 10,
     filter_smaller: Optional[bool] = True   
 ) -> Union[Tuple[list, list, list], Tuple[list, list, list, list]]:
     size = len(df)
@@ -60,6 +61,7 @@ def ccpart_random(
     expected_valid = valid_size * size
 
     labels = df[label_name].to_numpy() if label_name else None
+    labels = _discretizer(labels, n_bins=n_bins)
 
     # Generate cluster assignments
     cluster_df = generate_clusters(df, field_name=field_name,
@@ -124,6 +126,7 @@ def ccpart(
     valid_size: float = 0.0,
     threshold: float = 0.3,
     verbose: int = 0,
+    n_bins: int = 10,
     filter_smaller: Optional[bool] = True
 ) -> Union[Tuple[list, list, list], Tuple[list, list, list, list]]:
 
@@ -132,6 +135,7 @@ def ccpart(
     expected_valid = valid_size * size
 
     labels = df[label_name].to_numpy() if label_name else None
+    labels = _discretizer(labels, n_bins=n_bins)
 
     # Generate cluster assignments
     cluster_df = generate_clusters(df, field_name=field_name,

@@ -1,5 +1,7 @@
 import numpy as np
 
+from sklearn.preprocessing import KBinsDiscretizer
+
 
 def _balanced_labels(labels: np.ndarray, value: list, test: list,
                      test_size: float,
@@ -19,3 +21,13 @@ def _balanced_labels(labels: np.ndarray, value: list, test: list,
             if test_counts[test_idx] + new_counts[new_idx] > proportion * 1.3:
                 return False
     return True
+
+
+def _discretizer(labels: np.ndarray, n_bins: int) -> np.ndarray:
+    if labels is None:
+        return None
+    elif len(np.unique(labels)) > 0.5 * len(labels):
+        disc = KBinsDiscretizer(n_bins=n_bins, encode='ordinal')
+        labels = disc.fit_transform(labels)
+    else:
+        return labels
