@@ -198,7 +198,7 @@ def ccpart(
     expected_valid = valid_size * size
 
     labels = df[label_name].to_numpy() if label_name else None
-    labels = _discretizer(labels.reshape(-1, 1), n_bins=n_bins)
+    labels = _discretizer(labels, n_bins=n_bins)
 
     # Generate cluster assignments
     cluster_df = generate_clusters(df, field_name=field_name,
