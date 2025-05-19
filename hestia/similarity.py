@@ -1074,7 +1074,7 @@ def sequence_similarity_needle(
     from hestia.utils.file_format import _write_fasta_chunks
     from concurrent.futures import ThreadPoolExecutor
 
-    if (field_name not in df_query.columns):
+    if (field_name not in df_query.columns.tolist()):
         raise ValueError(f'{field_name} not found in query DataFrame')
     if df_target is not None and field_name not in df_target.columns:
         raise ValueError(f'{field_name} not found in target DataFrame')
