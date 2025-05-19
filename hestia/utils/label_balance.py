@@ -29,7 +29,6 @@ def _discretizer(labels: np.ndarray, n_bins: int = 5) -> np.ndarray:
     elif len(np.unique(labels)) > 0.5 * len(labels):
         if len(labels.shape) < 2:
             labels = labels.reshape(-1, 1)
-            print(labels.shape)
         disc = KBinsDiscretizer(n_bins=n_bins, encode='ordinal')
         labels = disc.fit_transform(labels)
         return labels
