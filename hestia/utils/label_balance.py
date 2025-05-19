@@ -23,7 +23,7 @@ def _balanced_labels(labels: np.ndarray, value: list, test: list,
     return True
 
 
-def _discretizer(labels: np.ndarray, n_bins: int) -> np.ndarray:
+def _discretizer(labels: np.ndarray, n_bins: int = 5) -> np.ndarray:
     if labels is None:
         return None
     elif len(np.unique(labels)) > 0.5 * len(labels):
