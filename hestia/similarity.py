@@ -59,19 +59,18 @@ def sim_df2mtx(sim_df: Union[pl.DataFrame, pd.DataFrame],
     else:
         sim_df = sim_df.filter(pl.col('metric') < threshold)
 
-    queries = sim_df['query'].to_numpy()
-    targets = sim_df['target'].to_numpy()
-    metrics = sim_df['metric'].to_numpy()
+    # Convert metrics to boolean if requested
+    if boolean_out:
+        metrics = np.ones_like(sim_df['metric'].to_numpy(), dtype=np.bool_)
+    else:
+        metrics = sim_df['metric'].to_numpy()
 
-    dtype = np.bool_ if boolean_out else metrics.dtype
+    dtype = metrics.dtype
+
     if dtype == np.float16:
         dtype = np.float32
 
-    # Convert metrics to boolean if requested
-    if boolean_out:
-        metrics = np.ones_like(metrics, dtype=np.bool_)
-
-    mtx = spr.coo_matrix((metrics, (queries, targets)),
+    mtx = spr.coo_matrix((metrics, (sim_df['query'], sim_df['target'])),
                          shape=(size_query, size_target),
                          dtype=dtype)
     return mtx.maximum(mtx.transpose())
@@ -409,19 +408,8 @@ def molecular_similarity(
         target_size = len(target_fps)
 
     chunks_target = (len(df_target) // chunk_size) + 1
-    metrics = np.zeros((max_complex), dtype=np.float16)
 
-    if max_complex < 1e5:
-        index_type = np.uint16
-    elif max_complex < 1e9:
-        index_type = np.uint32
-    elif max_complex < 1e19:
-        index_type = np.uint64
-    else:
-        index_type = np.uint128
-
-    queries = np.zeros_like(metrics, dtype=index_type)
-    targets = np.zeros_like(metrics, dtype=index_type)
+    results = []
 
     if verbose > 1:
         pbar = tqdm(range(query_size), desc='Similarity calculation',
@@ -453,28 +441,17 @@ def molecular_similarity(
                     raise RuntimeError(job.exception())
                 result = job.result()
                 for idx_target, metric in enumerate(result):
-                    target_pointer = int((idx * chunk_size) + idx_target)
-                    query_pointer = int(chunk)
-                    pointer = (query_pointer * target_size) + target_pointer
-                    if metric < threshold:
-                        continue
-                    queries[pointer] = query_pointer
-                    targets[pointer] = target_pointer
-                    metrics[pointer] = metric
+                    if metric >= threshold:
+                        results.append((chunk, idx * chunk_size + idx_target, metric))
 
-    mask = metrics > threshold
-    queries = queries[mask]
-    targets = targets[mask]
-    metrics = metrics[mask]
-    df = pl.DataFrame({'query': queries, 'target': targets, 'metric': metrics})
+    df = pl.DataFrame(results, schema=["query", "target", "metric"],
+                      orient='row')
 
     if sim_function in ['manhattan', 'euclidean', 'canberra']:
         df = df.with_columns(
             pl.col("metric").map_elements(lambda x: 1 / (1 + x),
                                           return_dtype=pl.Float32)
         )
-
-    df = df.filter(pl.col("metric") > threshold)
 
     if save_alignment:
         if filename is None:
