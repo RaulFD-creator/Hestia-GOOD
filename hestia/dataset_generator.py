@@ -12,7 +12,6 @@ from hestia.similarity import (sequence_similarity_mmseqs,
                                sequence_similarity_needle,
                                sequence_similarity_peptides,
                                molecular_similarity,
-                               molecular_similarity_low_memory,
                                embedding_similarity,
                                protein_structure_similarity)
 from hestia.partition import random_partition, ccpart, ccpart_random, graph_part
@@ -265,32 +264,18 @@ class HestiaGenerator:
                 filename=sim_args.filename
             )
         elif 'molecu' in sim_args.data_type:
-            if 'low-mem' in sim_args.data_type:
-                sim_df = molecular_similarity_low_memory(
-                    df_query=self.data,
-                    df_target=sim_args.target_df,
-                    field_name=sim_args.field_name,
-                    sim_function=sim_args.sim_function,
-                    fingerprint=sim_args.fingerprint,
-                    bits=sim_args.bits, radius=sim_args.radius,
-                    threshold=sim_args.min_threshold, threads=sim_args.threads,
-                    verbose=sim_args.verbose,
-                    save_alignment=sim_args.save_alignment,
-                    filename=sim_args.filename
-                )
-            else:
-                sim_df = molecular_similarity(
-                    df_query=self.data,
-                    df_target=sim_args.target_df,
-                    field_name=sim_args.field_name,
-                    sim_function=sim_args.sim_function,
-                    fingerprint=sim_args.fingerprint,
-                    bits=sim_args.bits, radius=sim_args.radius,
-                    threshold=sim_args.min_threshold, threads=sim_args.threads,
-                    verbose=sim_args.verbose,
-                    save_alignment=sim_args.save_alignment,
-                    filename=sim_args.filename
-                )
+            sim_df = molecular_similarity(
+                df_query=self.data,
+                df_target=sim_args.target_df,
+                field_name=sim_args.field_name,
+                sim_function=sim_args.sim_function,
+                fingerprint=sim_args.fingerprint,
+                bits=sim_args.bits, radius=sim_args.radius,
+                threshold=sim_args.min_threshold, threads=sim_args.threads,
+                verbose=sim_args.verbose,
+                save_alignment=sim_args.save_alignment,
+                filename=sim_args.filename
+            )
         elif 'embedding' in sim_args.data_type:
             sim_df = embedding_similarity(
                 query_embds=sim_args.query_embds,
