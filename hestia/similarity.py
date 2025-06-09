@@ -55,15 +55,15 @@ def sim_df2mtx(sim_df: Union[pl.DataFrame, pd.DataFrame],
         size_target = size_query
 
     if filter_smaller:
-        sim_df = sim_df.filter(pl.col('metric') > threshold)
+        sim_df = sim_df.filter(pl.col('metric') >= threshold)
     else:
-        sim_df = sim_df.filter(pl.col('metric') < threshold)
+        sim_df = sim_df.filter(pl.col('metric') <= threshold)
 
     # Convert metrics to boolean if requested
     if boolean_out:
         metrics = np.ones_like(sim_df['metric'].to_numpy(), dtype=np.bool_)
     else:
-        metrics = sim_df['metric'].to_numpy()
+        metrics = sim_df['metric'].to_numpy().astype(np.float32)
 
     dtype = metrics.dtype
 
@@ -73,7 +73,11 @@ def sim_df2mtx(sim_df: Union[pl.DataFrame, pd.DataFrame],
     mtx = spr.coo_matrix((metrics, (sim_df['query'], sim_df['target'])),
                          shape=(size_query, size_target),
                          dtype=dtype)
-    return mtx.maximum(mtx.transpose())
+
+    if size_query == size_target:
+        return mtx.maximum(mtx.transpose())
+    else:
+        return mtx
 
 
 def embedding_similarity(
@@ -122,7 +126,7 @@ def embedding_similarity(
     bulk_sim_metric = BULK_SIM_METRICS[sim_function]
     chunk_size = threads * 1_000
     chunks_target = (len(target_embds) // chunk_size) + 1
-    queries, targets, metrics = [], [], []
+    results = []
     if verbose > 1:
         pbar = tqdm(range(len(query_embds)), desc='Similarity calculation',
                     unit_scale=True)
@@ -144,6 +148,7 @@ def embedding_similarity(
                     chunk_fps = target_embds[start_t:end_t]
 
                 query_fp = query_embds[chunk]
+
                 job = executor.submit(bulk_sim_metric, query_fp, chunk_fps)
                 jobs.append(job)
 
@@ -152,24 +157,13 @@ def embedding_similarity(
                     raise RuntimeError(job.exception())
                 result = job.result()
                 for idx_target, metric in enumerate(result):
-                    if metric < threshold:
-                        continue
-                    queries.append(int(chunk))
-                    targets.append(int((idx * chunk_size) + idx_target))
-                    metrics.append(metric)
+                    if sim_function in ['manhattan', 'euclidean', 'canberra']:
+                        metric = 1 / (1 + metric)
+                    if metric >= threshold:
+                        results.append((chunk, idx * chunk_size + idx_target, metric))
 
-    df = pl.DataFrame({
-        "query": queries,
-        "target": targets,
-        "metric": metrics
-    })
-
-    if sim_function in ['manhattan', 'euclidean', 'canberra']:
-        df = df.with_columns((1 / (1 + pl.col("metric"))).alias(
-            'metric'
-        ))
-
-    df = df.filter(pl.col("metric") > threshold)
+    df = pl.DataFrame(results, schema={"query": pl.UInt32, "target": pl.UInt32,
+                                       "metric": pl.Float32}, orient='row')
 
     if save_alignment:
         if filename is None:
@@ -399,13 +393,9 @@ def molecular_similarity(
         target_fps = np.stack(target_fps)
 
     if isinstance(query_fps, np.ndarray):
-        max_complex = query_fps.shape[0] * target_fps.shape[0]
         query_size = query_fps.shape[0]
-        target_size = target_fps.shape[0]
     else:
-        max_complex = len(query_fps) * len(target_fps)
         query_size = len(query_fps)
-        target_size = len(target_fps)
 
     chunks_target = (len(df_target) // chunk_size) + 1
 
@@ -444,8 +434,8 @@ def molecular_similarity(
                     if metric >= threshold:
                         results.append((chunk, idx * chunk_size + idx_target, metric))
 
-    df = pl.DataFrame(results, schema=["query", "target", "metric"],
-                      orient='row')
+    df = pl.DataFrame(results, schema={"query": pl.UInt32, "target": pl.UInt32,
+                                       "metric": pl.Float32}, orient='row')
 
     if sim_function in ['manhattan', 'euclidean', 'canberra']:
         df = df.with_columns(
@@ -474,7 +464,7 @@ def protein_structure_similarity(
     save_alignment: bool = False,
     filename: str = None,
     **kwargs
-) -> Union[pd.DataFrame, np.ndarray]:   
+) -> Union[pd.DataFrame, np.ndarray]:
     """
     Calculates pairwise structural similarity between query and target protein structures using Foldseek.
     Supports alignment based on various representations, including 3D alignment, TM alignment, and 
