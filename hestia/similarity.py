@@ -158,19 +158,13 @@ def embedding_similarity(
                 result = job.result()
                 for idx_target, metric in enumerate(result):
                     if sim_function in ['manhattan', 'euclidean', 'canberra']:
-                        if metric < threshold:
-                            results.append((chunk, idx * chunk_size + idx_target, metric))
-                    else:
-                        if metric >= threshold:
-                            results.append((chunk, idx * chunk_size + idx_target, metric))
+                        metric = 1 / (1 + metric)
+                    if metric >= threshold:
+                        results.append((chunk, idx * chunk_size + idx_target, metric))
 
     df = pl.DataFrame(results, schema={"query": pl.UInt32, "target": pl.UInt32,
                                        "metric": pl.Float32}, orient='row')
-    if sim_function in ['manhattan', 'euclidean', 'canberra']:
-        df = df.with_columns(
-            pl.col("metric").map_elements(lambda x: 1 / (1 + x),
-                                          return_dtype=pl.Float32)
-        )
+
     if save_alignment:
         if filename is None:
             filename = f"{time.time()}"
