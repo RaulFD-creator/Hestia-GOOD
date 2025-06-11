@@ -11,7 +11,10 @@ https://github.com/graph-part/graph-part/
 """
 from typing import List, Tuple
 
-import networkx as nx
+try:
+    import networkx as nx
+except ImportError:
+    raise ImportError("This function requires install networkx: `pip install networkx`")
 import numpy as np
 from tqdm import tqdm
 import scipy.sparse as spr
