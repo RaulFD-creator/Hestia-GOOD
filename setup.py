@@ -9,7 +9,6 @@ this_directory = Path(__file__).parent
 readme = (this_directory / "README.md").read_text()
 
 requirements = [
-    'networkx',
     'scipy',
     'scikit-learn',
     'pandas',
