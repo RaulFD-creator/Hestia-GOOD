@@ -11,7 +11,7 @@ https://github.com/graph-part/graph-part/
 """
 from typing import List, Tuple
 
-try
+try:
     import networkx as nx
 except ImportError:
     raise ImportError("This function requires install networkx: `pip install networkx`")
