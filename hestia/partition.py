@@ -452,10 +452,5 @@ def graph_part(
                     f'{(len(o_test) /  removed.sum()) * 100:.2f} %')
             return o_train, o_test, clusters
 
-    partitions = []
-    for clus in clus_labs:
-        members = (re_clusters == clus) * removed
-        inds = np.argwhere(members)
-        partitions.append(inds.tolist())
-
-    return partitions, clusters
+    re_clusters[~removed] = -1
+    return re_clusters
