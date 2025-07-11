@@ -4,6 +4,7 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
+from hestia import __version__
 
 this_directory = Path(__file__).parent
 readme = (this_directory / "README.md").read_text()
@@ -41,6 +42,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/IBM/Hestia-GOOD',
-    version='1.0.1',
+    version=__version__,
     zip_safe=False,
 )
