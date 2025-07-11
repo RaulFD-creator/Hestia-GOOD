@@ -118,7 +118,11 @@ class HestiaGenerator:
             print('Initialising Hestia Dataset Generator')
             print(f'Number of items in data: {len(self.data):,}')
 
-    def get_partition(self, partition: Union[str, float]) -> dict:
+    def get_partition(self, partition: Union[str, float], filter: float = None) -> Union[dict, tuple]:
+        filter = filter if filter is not None else 0.01
+        if partition == 'min':
+            for key, value in self.get_partitions(filter=filter):
+                return key, value
         return self.partitions[partition]
 
     def get_partitions(self, filter: Union[bool, int, float] = False,
