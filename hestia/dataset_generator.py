@@ -14,7 +14,8 @@ from hestia.similarity import (sequence_similarity_mmseqs,
                                molecular_similarity,
                                embedding_similarity,
                                protein_structure_similarity)
-from hestia.partition import random_partition, ccpart, ccpart_random, graph_part
+from hestia.partition import (train_test_split, ccpart, ccpart_random,
+                              graph_part, random_partition)
 
 
 class SimArguments:
@@ -416,6 +417,7 @@ class HestiaGenerator:
                     sim_df=sim_df, verbose=verbose
                 )
                 th_parts = (train, test)
+                print(len(set(train) & set(test)))
             elif partition_algorithm == 'ccpart_random':
                 train, test, clusters = ccpart_random(
                     self.data,
@@ -443,9 +445,9 @@ class HestiaGenerator:
 
             if n_partitions is None:
                 if valid_size > 0.:
-                    train_th_parts = random_partition(
-                        self.data.iloc[th_parts[0]].reset_index(drop=True),
-                        test_size=valid_size, random_state=random_state
+                    train_th_parts = train_test_split(
+                        th_parts[0], test_size=valid_size,
+                        random_state=random_state
                     )
                     self.partitions[th / 100] = {
                         'train': train_th_parts[0],
